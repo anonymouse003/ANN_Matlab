@@ -1,0 +1,51 @@
+% Create sample data
+x = -10:0.1:10; % Input range
+y = sin(x) + 0.1 * randn(size(x));
+
+
+
+%Preparing the Data
+trainRatio = 0.7;
+[trainInd,~,testInd] = dividerand(length(x), trainRatio, 0, 1-trainRatio);
+
+xTrain = x(trainInd);
+yTrain = y(trainInd);
+xTest = x(testInd);
+yTest = y(testInd);
+
+
+
+% Creating a feedforward neural network
+hiddenLayerSizes = [10, 10, 5]; % 10 neurons in the first and second hidden layers, 5 in the third
+net = fitnet(hiddenLayerSizes);
+
+% Configure the neural network
+net.trainFcn = 'trainlm'; % Levenberg-Marquardt backpropagation
+net.performFcn = 'mse'; % Mean Squared Error
+
+% training, validation, and testing
+net.divideParam.trainRatio = 0.7;
+net.divideParam.valRatio = 0.15;
+net.divideParam.testRatio = 0.15;
+
+
+% Training 
+[net, tr] = train(net, xTrain, yTrain);
+
+% View the neural network
+view(net);
+
+
+% Test
+yPred = net(xTest);
+
+% Calculate performance
+performance = perform(net, yTest, yPred);
+disp(['Test Performance: ', num2str(performance)]);
+
+% Plot the results
+figure;
+plot(xTest, yTest, 'b.', 'MarkerSize', 15); hold on;
+plot(xTest, yPred, 'r-', 'LineWidth', 2);
+title('Neural Network Prediction');
+legend('Actual', 'Predicted');
